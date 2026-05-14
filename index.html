@@ -25,7 +25,13 @@
         <section class="view active" id="today-view" aria-labelledby="today-tab">
           <section class="hero-panel">
             <div class="hero-copy">
-              <p class="section-label">Today's hydration</p>
+              <div class="section-row compact-row">
+                <p class="section-label">Today's hydration</p>
+                <div class="unit-toggle" aria-label="Display unit">
+                  <button class="unit-option active" type="button" data-display-unit="oz">oz</button>
+                  <button class="unit-option" type="button" data-display-unit="ml">ml</button>
+                </div>
+              </div>
               <div class="total-row">
                 <span id="today-total-oz">0 oz</span>
                 <span id="today-goal-oz">/ 95 oz</span>
@@ -73,12 +79,18 @@
           </section>
 
           <section class="panel weather-panel">
-            <div>
-              <p class="section-label">Weather</p>
+            <div class="weather-copy-block">
+              <div class="section-row compact-row">
+                <p class="section-label">Weather</p>
+                <button class="text-button" id="weather-button" type="button">Use location</button>
+              </div>
               <h2 id="weather-title">Weather not loaded</h2>
-              <p class="muted" id="weather-copy">Local temperature and humidity adjust the wash window.</p>
+              <p class="muted" id="weather-copy">Use location or enter a city to tune wash timing.</p>
+              <form class="city-form" id="city-form">
+                <input id="city-input" type="text" placeholder="Enter city if location fails" autocomplete="address-level2" />
+                <button class="secondary-action" type="submit">Set city</button>
+              </form>
             </div>
-            <button class="text-button" id="weather-button" type="button">Refresh</button>
           </section>
         </section>
 
@@ -144,7 +156,7 @@
               </div>
               <span class="status-pill clean" id="clean-status">Clean</span>
             </div>
-            <p class="muted" id="clean-reason">This reminder is based on your last wash, recent drink, and today's weather.</p>
+            <p class="muted" id="clean-reason">Drink + deadline + weather, in one line.</p>
           </section>
 
           <section class="panel">

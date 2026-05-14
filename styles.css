@@ -256,6 +256,56 @@ main {
   gap: 14px;
 }
 
+.compact-row {
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.unit-toggle {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(42px, 1fr));
+  gap: 3px;
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 3px;
+}
+
+.unit-option {
+  min-height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.unit-option.active {
+  background: var(--ink);
+  color: #fff;
+}
+
+.weather-panel {
+  display: block;
+}
+
+.weather-copy-block {
+  display: grid;
+  gap: 8px;
+}
+
+.city-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.city-form input {
+  min-width: 0;
+}
+
 .status-pill {
   flex: 0 0 auto;
   border-radius: 999px;
@@ -670,7 +720,8 @@ select {
   }
 
   .form-grid,
-  .drink-type-grid {
+  .drink-type-grid,
+  .city-form {
     grid-template-columns: 1fr;
   }
 

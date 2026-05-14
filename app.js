@@ -40,6 +40,7 @@ const els = {
   hydrationProgress: document.querySelector("#hydration-progress"),
   hydrationChart: document.querySelector("#hydration-chart"),
   chartSummary: document.querySelector("#chart-summary"),
+  unitButtons: document.querySelectorAll("[data-display-unit]"),
   activeBottleName: document.querySelector("#active-bottle-name"),
   activeStatus: document.querySelector("#active-status"),
   activeBottleMeta: document.querySelector("#active-bottle-meta"),
@@ -49,6 +50,8 @@ const els = {
   weatherTitle: document.querySelector("#weather-title"),
   weatherCopy: document.querySelector("#weather-copy"),
   weatherButton: document.querySelector("#weather-button"),
+  cityForm: document.querySelector("#city-form"),
+  cityInput: document.querySelector("#city-input"),
   presetSelect: document.querySelector("#preset-select"),
   bottleForm: document.querySelector("#bottle-form"),
   brandInput: document.querySelector("#brand-input"),
@@ -79,6 +82,7 @@ function init() {
   bindBottleForm();
   bindCleanButtons();
   bindCleanUndo();
+  bindUnitPreference();
   bindWeather();
   bindNotifications();
   renderPresetOptions();
@@ -134,6 +138,13 @@ function bindDrinkTypes() {
 function renderDrinkTypeButtons() {
   els.drinkTypeGrid.querySelectorAll(".drink-type").forEach((button, index) => {
     button.classList.toggle("active", drinkTypes[index].id === selectedDrinkType);
+  });
+}
+
+function renderUnitButtons() {
+  const unit = getDisplayUnit();
+  els.unitButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.displayUnit === unit);
   });
 }
 
@@ -282,8 +293,22 @@ function bindCleanUndo() {
   });
 }
 
+function bindUnitPreference() {
+  els.unitButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      state.settings.displayUnit = button.dataset.displayUnit;
+      saveState();
+      render();
+    });
+  });
+}
+
 function bindWeather() {
   els.weatherButton.addEventListener("click", refreshWeather);
+  els.cityForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    refreshWeatherByCity(els.cityInput.value.trim());
+  });
 }
 
 function bindNotifications() {
@@ -339,12 +364,20 @@ function renderToday() {
   const progress = Math.min(100, Math.round((todayTotalMl / DAILY_GOAL_ML) * 100));
   const activeBottle = getActiveBottle();
   const risk = activeBottle ? getBottleRisk(activeBottle) : null;
+  const displayUnit = getDisplayUnit();
 
-  els.todayTotalOz.textContent = `${Math.round(todayOz)} oz`;
-  els.todayGoalOz.textContent = `/ ${Math.round(goalOz)} oz`;
-  els.todayTotalMl.textContent = `${Math.round(todayTotalMl).toLocaleString()} ml / ${DAILY_GOAL_ML.toLocaleString()} ml`;
+  if (displayUnit === "ml") {
+    els.todayTotalOz.textContent = `${Math.round(todayTotalMl).toLocaleString()} ml`;
+    els.todayGoalOz.textContent = `/ ${DAILY_GOAL_ML.toLocaleString()} ml`;
+    els.todayTotalMl.textContent = `${Math.round(todayOz)} oz / ${Math.round(goalOz)} oz`;
+  } else {
+    els.todayTotalOz.textContent = `${Math.round(todayOz)} oz`;
+    els.todayGoalOz.textContent = `/ ${Math.round(goalOz)} oz`;
+    els.todayTotalMl.textContent = `${Math.round(todayTotalMl).toLocaleString()} ml / ${DAILY_GOAL_ML.toLocaleString()} ml`;
+  }
   els.hydrationProgress.style.width = `${progress}%`;
   els.undoButton.disabled = state.undoStack?.at(-1)?.type !== "sip";
+  renderUnitButtons();
   renderHydrationChart();
 
   if (!activeBottle) {
@@ -380,21 +413,21 @@ function renderHydrationChart() {
     return;
   }
 
+  const timelineItems = getTimelineItems(logs);
   let cumulative = 0;
   const now = new Date();
   const maxMl = Math.max(DAILY_GOAL_ML, getTodayTotalMl());
-  const points = logs.map((log) => {
-    const date = new Date(log.createdAt);
-    cumulative += log.amountMl;
-    const minutes = date.getHours() * 60 + date.getMinutes();
+  const points = timelineItems.map((item) => {
+    cumulative += item.amountMl;
+    const minutes = item.minuteOfDay;
     const x = padding + (minutes / 1439) * usableWidth;
     const y = height - padding - (cumulative / maxMl) * usableHeight;
-    return { x, y, cumulative, amountMl: log.amountMl, date };
+    return { x, y, cumulative, amountMl: item.amountMl, label: item.label, timeLabel: item.timeLabel, count: item.count };
   });
   const nowX = padding + ((now.getHours() * 60 + now.getMinutes()) / 1439) * usableWidth;
   const path = points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(" ");
   const dots = points
-    .map((point) => `<circle class="chart-dot" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="4"></circle>`)
+    .map((point) => `<circle class="chart-dot" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="4"><title>${point.timeLabel}: ${formatAmountLabel(point.amountMl)}${point.count > 1 ? ` across ${point.count} logs` : ""}</title></circle>`)
     .join("");
   const labels = points
     .map((point, index) => {
@@ -404,7 +437,10 @@ function renderHydrationChart() {
     })
     .join("");
 
-  els.chartSummary.textContent = `${logs.length} log${logs.length === 1 ? "" : "s"} today`;
+  els.chartSummary.textContent =
+    timelineItems.length === logs.length
+      ? `${logs.length} log${logs.length === 1 ? "" : "s"} today`
+      : `${logs.length} logs grouped into ${timelineItems.length} blocks`;
   els.hydrationChart.innerHTML = `
     <line class="chart-grid" x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" />
     <line class="chart-grid" x1="${padding}" y1="${height / 2}" x2="${width - padding}" y2="${height / 2}" />
@@ -415,6 +451,39 @@ function renderHydrationChart() {
     <text class="chart-label" x="${padding}" y="${height - 4}">12 AM</text>
     <text class="chart-label" x="${width - 50}" y="${height - 4}">11 PM</text>
   `;
+}
+
+function getTimelineItems(logs) {
+  if (logs.length <= 8) {
+    return logs.map((log) => {
+      const date = new Date(log.createdAt);
+      return {
+        amountMl: log.amountMl,
+        minuteOfDay: date.getHours() * 60 + date.getMinutes(),
+        count: 1,
+        timeLabel: formatClock(date),
+      };
+    });
+  }
+
+  const bucketSizeMinutes = 120;
+  const buckets = new Map();
+  logs.forEach((log) => {
+    const date = new Date(log.createdAt);
+    const minuteOfDay = date.getHours() * 60 + date.getMinutes();
+    const bucketStart = Math.floor(minuteOfDay / bucketSizeMinutes) * bucketSizeMinutes;
+    const bucket = buckets.get(bucketStart) || { amountMl: 0, count: 0, minuteOfDay: bucketStart + bucketSizeMinutes / 2 };
+    bucket.amountMl += log.amountMl;
+    bucket.count += 1;
+    buckets.set(bucketStart, bucket);
+  });
+
+  return [...buckets.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([bucketStart, bucket]) => ({
+      ...bucket,
+      timeLabel: `${formatMinuteOfDay(bucketStart)}-${formatMinuteOfDay(Math.min(1439, bucketStart + bucketSizeMinutes))}`,
+    }));
 }
 
 function renderBottles() {
@@ -463,6 +532,9 @@ function renderBottles() {
         state.activeBottleId = bottle.id;
       }
       if (button.dataset.action === "remove") {
+        if (!window.confirm(`Remove ${bottle.brand} ${bottle.model}? This also deletes its sip and clean history.`)) {
+          return;
+        }
         removeBottle(bottle.id);
       }
       saveState();
@@ -520,11 +592,12 @@ function renderClean() {
 function renderWeather() {
   if (!state.weather) {
     els.weatherTitle.textContent = "Weather not loaded";
-    els.weatherCopy.textContent = "Local temperature and humidity adjust the wash window.";
+    els.weatherCopy.textContent = "Use location or enter a city to tune wash timing.";
     return;
   }
-  els.weatherTitle.textContent = `${Math.round(state.weather.temperatureF)}°F · ${Math.round(state.weather.humidity)}% humidity`;
-  els.weatherCopy.textContent = "Warmer or humid weather shortens the wash window for bottles with residue.";
+  const source = state.weather.city ? ` · ${state.weather.city}` : "";
+  els.weatherTitle.textContent = `${Math.round(state.weather.temperatureF)}°F · ${Math.round(state.weather.humidity)}% humidity${source}`;
+  els.weatherCopy.textContent = "Heat or humidity shortens rinse and wash windows.";
 }
 
 function renderBottleVisual(parts) {
@@ -586,7 +659,7 @@ async function refreshWeather() {
   els.weatherTitle.textContent = "Checking location...";
   if (!navigator.geolocation) {
     els.weatherTitle.textContent = "Location unavailable";
-    els.weatherCopy.textContent = "This browser does not support location access.";
+    els.weatherCopy.textContent = "Enter a city instead.";
     return;
   }
 
@@ -594,31 +667,67 @@ async function refreshWeather() {
     async (position) => {
       try {
         const { latitude, longitude } = position.coords;
-        const url = new URL("https://api.open-meteo.com/v1/forecast");
-        url.searchParams.set("latitude", latitude);
-        url.searchParams.set("longitude", longitude);
-        url.searchParams.set("current", "temperature_2m,relative_humidity_2m");
-        url.searchParams.set("temperature_unit", "fahrenheit");
-        const response = await fetch(url);
-        const data = await response.json();
-        state.weather = {
-          temperatureF: data.current.temperature_2m,
-          humidity: data.current.relative_humidity_2m,
-          updatedAt: new Date().toISOString(),
-        };
-        saveState();
-        render();
-        maybeNotifyRisk();
+        await setWeatherFromCoordinates(latitude, longitude, "");
       } catch {
         els.weatherTitle.textContent = "Weather failed";
-        els.weatherCopy.textContent = "Try again when the network is available.";
+        els.weatherCopy.textContent = "Enter a city or try again when the network is available.";
       }
     },
     () => {
       els.weatherTitle.textContent = "Location blocked";
-      els.weatherCopy.textContent = "Allow location to use temperature and humidity in wash reminders.";
+      els.weatherCopy.textContent = "Enter a city to use weather-based wash reminders.";
     },
   );
+}
+
+async function refreshWeatherByCity(city) {
+  if (!city) {
+    els.weatherTitle.textContent = "City needed";
+    els.weatherCopy.textContent = "Enter a city name, like Austin or Toronto.";
+    return;
+  }
+
+  els.weatherTitle.textContent = `Finding ${city}...`;
+  try {
+    const geoUrl = new URL("https://geocoding-api.open-meteo.com/v1/search");
+    geoUrl.searchParams.set("name", city);
+    geoUrl.searchParams.set("count", "1");
+    geoUrl.searchParams.set("language", "en");
+    geoUrl.searchParams.set("format", "json");
+    const geoResponse = await fetch(geoUrl);
+    const geoData = await geoResponse.json();
+    const match = geoData.results?.[0];
+    if (!match) {
+      els.weatherTitle.textContent = "City not found";
+      els.weatherCopy.textContent = "Try a larger nearby city.";
+      return;
+    }
+
+    const label = [match.name, match.admin1, match.country_code].filter(Boolean).join(", ");
+    await setWeatherFromCoordinates(match.latitude, match.longitude, label);
+  } catch {
+    els.weatherTitle.textContent = "Weather failed";
+    els.weatherCopy.textContent = "Check the city spelling or try again later.";
+  }
+}
+
+async function setWeatherFromCoordinates(latitude, longitude, city) {
+  const url = new URL("https://api.open-meteo.com/v1/forecast");
+  url.searchParams.set("latitude", latitude);
+  url.searchParams.set("longitude", longitude);
+  url.searchParams.set("current", "temperature_2m,relative_humidity_2m");
+  url.searchParams.set("temperature_unit", "fahrenheit");
+  const response = await fetch(url);
+  const data = await response.json();
+  state.weather = {
+    temperatureF: data.current.temperature_2m,
+    humidity: data.current.relative_humidity_2m,
+    city,
+    updatedAt: new Date().toISOString(),
+  };
+  saveState();
+  render();
+  maybeNotifyRisk();
 }
 
 function maybeNotifyRisk() {
@@ -674,17 +783,14 @@ function getBottleRisk(bottle) {
   const remainingHours = (nextDue.deadline.getTime() - Date.now()) / 36e5;
   const status = getDeadlineStatus(nextDue.drink.action, nextDue.deadline, remainingHours);
   const weatherText = getWeatherAdjustmentText();
-  const reasonParts = [
-    `${nextDue.drink.label} should be ${actionPast(nextDue.drink.action)} within ${formatHours(nextDue.dueHours)}`,
-    `logged ${formatDateTime(nextDue.log.createdAt)}`,
-  ];
+  const reasonParts = [`${nextDue.drink.label}`, `${nextDue.drink.action} by ${formatDeadline(nextDue.deadline)}`];
   if (weatherText) reasonParts.push(weatherText);
 
   return {
     score: Math.max(0, Math.round((24 - remainingHours) / 2)),
     statusLabel: status.label,
     statusClass: status.className,
-    reason: `${status.label}: ${reasonParts.join("; ")}.`,
+    reason: reasonParts.join(". ") + ".",
     action: nextDue.drink.action,
     deadline: nextDue.deadline.toISOString(),
   };
@@ -737,16 +843,16 @@ function getUnwashedSips(bottle) {
 function getWeatherAdjustmentText() {
   if (!state.weather) return "";
   if (state.weather.temperatureF > 90) {
-    return "above 90°F shortens protein/shake cleanup to 1 hour";
+    return "Hot weather: faster clean";
   }
   if (state.weather.temperatureF > 80 && state.weather.humidity > 65) {
-    return "warm and humid weather shortens the cleaning window";
+    return "Warm + humid: faster clean";
   }
   if (state.weather.temperatureF > 80) {
-    return "warm weather shortens the cleaning window";
+    return "Warm weather: faster clean";
   }
   if (state.weather.humidity > 65) {
-    return "humidity shortens the cleaning window";
+    return "High humidity: faster clean";
   }
   return "";
 }
@@ -819,6 +925,7 @@ function loadState() {
       activeBottleId: null,
       notifiedKeys: [],
       undoStack: [],
+      settings: { displayUnit: "oz" },
       hasSeeded: false,
     };
   }
@@ -833,6 +940,7 @@ function loadState() {
       activeBottleId: parsed.activeBottleId || null,
       notifiedKeys: parsed.notifiedKeys || [],
       undoStack: parsed.undoStack || [],
+      settings: { displayUnit: parsed.settings?.displayUnit || "oz" },
       hasSeeded: Boolean(parsed.hasSeeded),
     };
   } catch {
@@ -845,6 +953,7 @@ function loadState() {
       activeBottleId: null,
       notifiedKeys: [],
       undoStack: [],
+      settings: { displayUnit: "oz" },
       hasSeeded: false,
     };
   }
@@ -861,6 +970,10 @@ function setStatusPill(element, className, label) {
 
 function mlToOz(ml) {
   return ml / OZ_TO_ML;
+}
+
+function getDisplayUnit() {
+  return state.settings?.displayUnit === "ml" ? "ml" : "oz";
 }
 
 function hoursSince(isoDate) {
@@ -894,6 +1007,12 @@ function formatClock(date) {
   }).format(date);
 }
 
+function formatMinuteOfDay(minutes) {
+  const date = new Date();
+  date.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+  return formatClock(date);
+}
+
 function formatDeadline(date) {
   const deadline = new Date(date);
   if (isToday(deadline.toISOString())) return formatClock(deadline);
@@ -912,13 +1031,13 @@ function formatHours(hours) {
 }
 
 function formatAmountLabel(amountMl) {
+  if (getDisplayUnit() === "ml") {
+    return `${Math.round(amountMl).toLocaleString()} ml`;
+  }
   const oz = Math.round(mlToOz(amountMl));
   return `${oz} oz`;
 }
 
-function actionPast(action) {
-  return action === "Rinse" ? "rinsed" : "washed";
-}
 
 function isToday(isoDate) {
   const date = new Date(isoDate);

@@ -33,7 +33,11 @@ Low-fidelity layout:
 ├──────────────────────────────┤
 │ 64 oz / 95 oz                │
 │ 1,893 ml / 2,800 ml          │
+│ [oz] [ml]                    │
 │ [progress bar]               │
+│ Today by time                │
+│ 16 oz   8 oz   24 oz         │
+│ [group if many logs]         │
 ├──────────────────────────────┤
 │ Active bottle                │
 │ Owala FreeSip 32 oz          │
@@ -47,8 +51,8 @@ Low-fidelity layout:
 ├──────────────────────────────┤
 │ Weather                      │
 │ 84°F · 68% humidity          │
-│ Warmer weather shortens the  │
-│ wash window for this bottle. │
+│ [Use location]               │
+│ [Enter city] [Set city]      │
 └──────────────────────────────┘
 ```
 
@@ -59,7 +63,8 @@ Core copy:
 - "Active bottle"
 - "Log drink"
 - "Choose what was in the bottle"
-- "Warmer weather shortens the wash window."
+- "Use location or enter a city to tune wash timing."
+- "Heat or humidity shortens rinse and wash windows."
 
 Primary actions:
 
@@ -67,8 +72,10 @@ Primary actions:
 - Add 1/2 bottle
 - Add 1/4 bottle
 - Undo last drink log
+- Switch display unit between oz and ml
 - Request notifications
 - Refresh weather
+- Set city manually
 
 ## Bottles
 
@@ -124,6 +131,7 @@ Core copy:
 - "Recent drink"
 
 Last washed and last deep clean are derived from Clean records. Bottles does not write cleaning history.
+Remove requires confirmation and deletes the bottle's sip and clean logs.
 
 ## Clean
 
@@ -169,7 +177,7 @@ Cleaning states:
 Core copy:
 
 - "Bottle hygiene"
-- "This reminder is based on your last wash, recent drink, and today’s weather."
+- Short reason copy: "[Drink]. [Action] by [time]. [Weather adjustment if any]."
 - "Rinsed"
 - "Washed"
 - "Deep cleaned"
@@ -219,5 +227,6 @@ Deadline passed: Wash now or Rinse now
 - Clean logs are stored locally.
 - Hydration is logged only as 1 bottle, 1/2 bottle, or 1/4 bottle.
 - The Today total is calculated from today’s sip logs.
-- Weather uses current location with Open-Meteo.
-- Notifications trigger when a bottle reaches Wash tonight or Wash now.
+- Weather uses current location or manual city search with Open-Meteo.
+- Notifications trigger when a bottle reaches Wash by/Rinse by or Wash now/Rinse now.
+- Timeline labels use the preferred unit and group dense logs into 2-hour blocks.
