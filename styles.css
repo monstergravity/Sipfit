@@ -980,6 +980,7 @@ main {
   color: #171a1c;
   font-size: clamp(1rem, 1.45vw, 1.12rem);
   line-height: 1.76;
+  overflow-wrap: anywhere;
 }
 
 .article-main p {
@@ -1875,7 +1876,7 @@ select {
 
   .blog-shell {
     width: 100%;
-    padding: 8px 16px 72px;
+    padding: 10px 18px 76px;
   }
 
   .article-main {
@@ -1885,20 +1886,43 @@ select {
   }
 
   .article-main h1 {
-    margin-bottom: 28px;
-    font-size: clamp(2.25rem, 10.5vw, 3.15rem);
-    line-height: 1.04;
+    margin: 14px 0 26px;
+    font-size: clamp(2.05rem, 8.8vw, 2.8rem);
+    line-height: 1.08;
   }
 
   .article-main h2 {
-    margin-top: 44px;
-    font-size: clamp(1.45rem, 6.5vw, 2rem);
+    margin: 42px 0 14px;
+    font-size: clamp(1.45rem, 6vw, 1.85rem);
+    line-height: 1.18;
+  }
+
+  .article-main h3 {
+    margin: 26px 0 10px;
+    font-size: 1.18rem;
+    line-height: 1.3;
   }
 
   .article-main p,
   .article-main li {
-    font-size: 1rem;
-    line-height: 1.72;
+    font-size: 1.125rem;
+    line-height: 1.78;
+  }
+
+  .article-main p {
+    margin-bottom: 20px;
+  }
+
+  .article-main ul,
+  .article-main ol {
+    gap: 10px;
+    margin: 16px 0 28px;
+    padding-left: 22px;
+  }
+
+  .article-chip {
+    font-size: 0.88rem;
+    line-height: 1.25;
   }
 
   .short-answer,
@@ -1906,20 +1930,26 @@ select {
   .blog-cta-box,
   .keyword-box,
   .faq-box {
-    padding: 16px;
+    padding: 18px;
   }
 
   .table-wrap {
-    margin-right: -16px;
-    padding-right: 16px;
+    margin-right: -18px;
+    padding-right: 18px;
   }
 
   .article-table {
-    min-width: 520px;
+    min-width: 0;
+    font-size: 1rem;
   }
 
   .article-table th,
   .article-table td {
-    padding: 13px 14px;
+    padding: 14px 12px;
+  }
+
+  .keyword-cloud span,
+  .toc-card a {
+    font-size: 0.95rem;
   }
 }
