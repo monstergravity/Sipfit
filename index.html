@@ -167,6 +167,7 @@
               </div>
             </div>
             <div class="bottle-visual" id="bottle-visual" aria-label="Bottle part guide">
+              <div class="active-part-label" id="active-part-label">Bottle body</div>
               <div class="visual-part visual-cap" data-part="Lid"></div>
               <div class="visual-part visual-button" data-part="Button area"></div>
               <div class="visual-part visual-spout" data-part="Spout gasket"></div>
@@ -178,13 +179,15 @@
 
           <section class="panel">
             <p class="section-label">Record clean</p>
+            <p class="clean-level-desc" id="clean-level-desc">Washed: soap clean for daily bottle care.</p>
             <div class="clean-actions">
               <button class="secondary-action" data-clean-type="rinse" type="button">Rinsed</button>
               <button class="primary-action" data-clean-type="wash" type="button">Washed</button>
               <button class="secondary-action" data-clean-type="deep_clean" type="button">Deep cleaned</button>
             </div>
+            <button class="primary-action full-width save-clean-button" id="save-clean-button" type="button">Save clean record</button>
             <button class="text-button undo-button" id="undo-clean-button" type="button" disabled>Undo last clean</button>
-            <p class="helper-text" id="clean-helper">Washed resets the hygiene timer. Deep cleaned also resets gasket and lid care.</p>
+            <p class="helper-text" id="clean-helper">Choose a level, check the parts cleaned, then save.</p>
           </section>
 
           <section class="panel clean-history-panel">
@@ -204,6 +207,7 @@
         <button class="tab" id="bottles-tab" type="button" data-view="bottles-view">Bottles</button>
         <button class="tab" id="clean-tab" type="button" data-view="clean-view">Clean</button>
       </nav>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
 
     <script src="app.js" type="module"></script>

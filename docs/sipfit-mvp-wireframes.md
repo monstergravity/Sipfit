@@ -150,14 +150,19 @@ Low-fidelity layout:
 ├──────────────────────────────┤
 │ Checklist                    │
 │ Animated bottle part guide   │
+│ Current part: Spout gasket   │
 │ [ ] Bottle body              │
 │ [ ] Lid                      │
 │ [ ] Straw                    │
 │ [ ] Spout gasket             │
 │ [ ] Button area              │
 ├──────────────────────────────┤
+│ Record clean                 │
+│ Washed: soap clean for daily │
+│ bottle care.                 │
 │ [Rinsed] [Washed]            │
 │ [Deep cleaned]               │
+│ [Save clean record]          │
 ├──────────────────────────────┤
 │ Clean history                │
 │ Washed · May 14, 10:15 PM    │
@@ -182,6 +187,13 @@ Core copy:
 - "Washed"
 - "Deep cleaned"
 - "Undo last clean"
+- "Save clean record"
+
+Clean levels:
+
+- Rinsed: quick water flush for fresh residue or temporary protein cleanup.
+- Washed: soap clean for daily bottle care and the normal hygiene reset.
+- Deep cleaned: disassembled lid, straw, gasket, and hard-to-reach parts.
 
 ## Cleaning Deadline Algorithm
 

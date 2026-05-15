@@ -30,6 +30,8 @@ const checklistByBrand = {
 let state = loadState();
 let selectedDrinkType = "water";
 let selectedFraction = 1;
+let selectedCleanType = state.settings?.cleanType || "wash";
+let toastTimer = null;
 
 const els = {
   pageTitle: document.querySelector("#page-title"),
@@ -65,10 +67,14 @@ const els = {
   cleanStatus: document.querySelector("#clean-status"),
   cleanReason: document.querySelector("#clean-reason"),
   bottleVisual: document.querySelector("#bottle-visual"),
+  activePartLabel: document.querySelector("#active-part-label"),
   cleanChecklist: document.querySelector("#clean-checklist"),
+  cleanLevelDesc: document.querySelector("#clean-level-desc"),
+  saveCleanButton: document.querySelector("#save-clean-button"),
   undoCleanButton: document.querySelector("#undo-clean-button"),
   cleanHelper: document.querySelector("#clean-helper"),
   cleanHistory: document.querySelector("#clean-history"),
+  toast: document.querySelector("#toast"),
 };
 
 init();
@@ -180,6 +186,7 @@ function bindLogButtons() {
       render();
       maybeNotifyRisk();
       els.logHelper.textContent = `Logged ${formatFraction(fraction)} ${bottle.brand} ${bottle.model}.`;
+      showToast(`Logged ${formatAmountLabel(amountMl)} ${drinkLabel(selectedDrinkType)}`);
     });
   });
   renderFractionButtons();
@@ -205,6 +212,7 @@ function bindUndo() {
       saveState();
       render();
       els.logHelper.textContent = `Undid ${action.label}.`;
+      showToast("Drink log undone");
     }
   });
 }
@@ -229,6 +237,7 @@ function bindBottleForm() {
     els.bottleForm.reset();
     fillPreset();
     render();
+    showToast(`${brand} ${model} added`);
   });
 
   els.seedButton.addEventListener("click", () => {
@@ -241,42 +250,63 @@ function bindBottleForm() {
     state.activeBottleId = state.activeBottleId || state.bottles[0]?.id || null;
     saveState();
     render();
+    showToast("Example bottles loaded");
   });
 }
 
 function bindCleanButtons() {
   document.querySelectorAll("[data-clean-type]").forEach((button) => {
     button.addEventListener("click", () => {
-      const bottle = getActiveBottle();
-      if (!bottle) {
-        els.cleanHelper.textContent = "Add a bottle before recording cleaning.";
-        return;
-      }
-      const type = button.dataset.cleanType;
-      const now = new Date().toISOString();
-      const checkedParts = getCheckedCleanParts();
-      const cleanedParts = checkedParts.length ? checkedParts : getChecklistParts(bottle);
-      const cleanLog = {
-        id: crypto.randomUUID(),
-        bottleId: bottle.id,
-        type,
-        parts: cleanedParts,
-        createdAt: now,
-      };
-      state.cleanLogs.push(cleanLog);
-      state.undoStack = [
-        {
-          type: "clean",
-          logId: cleanLog.id,
-          bottleId: bottle.id,
-          label: `${cleanLabel(type)} ${bottle.brand} ${bottle.model}`,
-        },
-      ];
+      selectedCleanType = button.dataset.cleanType;
+      state.settings.cleanType = selectedCleanType;
       saveState();
-      render();
-      els.cleanHelper.textContent = `${cleanLabel(type)} recorded for ${bottle.brand} ${bottle.model}: ${cleanedParts.join(", ")}.`;
+      renderCleanLevelButtons();
     });
   });
+
+  els.saveCleanButton.addEventListener("click", saveCleanRecord);
+}
+
+function saveCleanRecord() {
+  const bottle = getActiveBottle();
+  if (!bottle) {
+    els.cleanHelper.textContent = "Add a bottle before recording cleaning.";
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const checkedParts = getCheckedCleanParts();
+  const cleanedParts = checkedParts.length ? checkedParts : getChecklistParts(bottle);
+  const cleanLog = {
+    id: crypto.randomUUID(),
+    bottleId: bottle.id,
+    type: selectedCleanType,
+    parts: cleanedParts,
+    createdAt: now,
+  };
+  state.cleanLogs.push(cleanLog);
+  state.undoStack = [
+    {
+      type: "clean",
+      logId: cleanLog.id,
+      bottleId: bottle.id,
+      label: `${cleanLabel(selectedCleanType)} ${bottle.brand} ${bottle.model}`,
+    },
+  ];
+  saveState();
+  render();
+  els.cleanHelper.textContent = `${cleanLabel(selectedCleanType)} saved: ${cleanedParts.join(", ")}.`;
+  showToast(`${cleanLabel(selectedCleanType)} saved`);
+}
+
+function renderCleanLevelButtons() {
+  document.querySelectorAll("[data-clean-type]").forEach((button) => {
+    const isActive = button.dataset.cleanType === selectedCleanType;
+    button.classList.toggle("selected-action", isActive);
+    button.classList.toggle("primary-action", isActive);
+    button.classList.toggle("secondary-action", !isActive);
+  });
+  els.cleanLevelDesc.textContent = getCleanLevelDescription(selectedCleanType);
 }
 
 function bindCleanUndo() {
@@ -290,6 +320,7 @@ function bindCleanUndo() {
     saveState();
     render();
     els.cleanHelper.textContent = `Undid ${action.label}.`;
+    showToast("Clean record undone");
   });
 }
 
@@ -530,12 +561,15 @@ function renderBottles() {
       if (!bottle) return;
       if (button.dataset.action === "active") {
         state.activeBottleId = bottle.id;
+        showToast(`${bottle.brand} ${bottle.model} is active`);
       }
       if (button.dataset.action === "remove") {
         if (!window.confirm(`Remove ${bottle.brand} ${bottle.model}? This also deletes its sip and clean history.`)) {
           return;
         }
+        const label = `${bottle.brand} ${bottle.model}`;
         removeBottle(bottle.id);
+        showToast(`${label} removed`);
       }
       saveState();
       render();
@@ -557,12 +591,14 @@ function removeBottle(bottleId) {
 function renderClean() {
   const bottle = getActiveBottle();
   els.undoCleanButton.disabled = state.undoStack?.at(-1)?.type !== "clean";
+  renderCleanLevelButtons();
   if (!bottle) {
     els.cleanBottleName.textContent = "No bottle selected";
     els.cleanReason.textContent = "Add a bottle to get a cleaning checklist.";
     setStatusPill(els.cleanStatus, "clean", "Clean");
     els.cleanChecklist.innerHTML = "";
     els.bottleVisual.innerHTML = "";
+    els.activePartLabel.textContent = "No bottle";
     els.cleanHistory.innerHTML = "";
     return;
   }
@@ -620,6 +656,7 @@ function getVisualClass(part) {
 }
 
 function activateVisualPart(part) {
+  els.activePartLabel.textContent = part;
   els.cleanChecklist.querySelectorAll(".check-item").forEach((item) => {
     item.classList.toggle("active", item.dataset.part === part);
   });
@@ -925,7 +962,7 @@ function loadState() {
       activeBottleId: null,
       notifiedKeys: [],
       undoStack: [],
-      settings: { displayUnit: "oz" },
+      settings: { displayUnit: "oz", cleanType: "wash" },
       hasSeeded: false,
     };
   }
@@ -940,7 +977,7 @@ function loadState() {
       activeBottleId: parsed.activeBottleId || null,
       notifiedKeys: parsed.notifiedKeys || [],
       undoStack: parsed.undoStack || [],
-      settings: { displayUnit: parsed.settings?.displayUnit || "oz" },
+      settings: { displayUnit: parsed.settings?.displayUnit || "oz", cleanType: parsed.settings?.cleanType || "wash" },
       hasSeeded: Boolean(parsed.hasSeeded),
     };
   } catch {
@@ -953,7 +990,7 @@ function loadState() {
       activeBottleId: null,
       notifiedKeys: [],
       undoStack: [],
-      settings: { displayUnit: "oz" },
+      settings: { displayUnit: "oz", cleanType: "wash" },
       hasSeeded: false,
     };
   }
@@ -1038,6 +1075,10 @@ function formatAmountLabel(amountMl) {
   return `${oz} oz`;
 }
 
+function drinkLabel(drinkType) {
+  return drinkTypes.find((drink) => drink.id === drinkType)?.label || "drink";
+}
+
 
 function isToday(isoDate) {
   const date = new Date(isoDate);
@@ -1063,6 +1104,21 @@ function cleanLabel(type) {
   if (type === "deep_clean") return "Deep clean";
   if (type === "wash") return "Wash";
   return "Rinse";
+}
+
+function getCleanLevelDescription(type) {
+  if (type === "rinse") return "Rinsed: quick water flush for fresh residue or temporary protein cleanup.";
+  if (type === "deep_clean") return "Deep cleaned: disassembled lid, straw, gasket, and hard-to-reach parts.";
+  return "Washed: soap clean for daily bottle care.";
+}
+
+function showToast(message) {
+  window.clearTimeout(toastTimer);
+  els.toast.textContent = message;
+  els.toast.classList.add("show");
+  toastTimer = window.setTimeout(() => {
+    els.toast.classList.remove("show");
+  }, 2200);
 }
 
 function escapeHtml(value) {
