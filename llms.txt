@@ -1,0 +1,38 @@
+# SipFit
+
+SipFit is a bottle-first hydration and reusable water bottle hygiene tracker.
+
+Website: https://sipfit.app/
+App: https://sipfit.app/app/
+Blog: https://sipfit.app/blog/
+
+## What SipFit Helps With
+
+- Track hydration by bottle.
+- Log water, electrolytes, protein, coffee, tea, sugary drinks, and other drinks.
+- Know when to rinse, wash, or deep clean reusable bottles.
+- Track bottle-specific cleaning history for Owala FreeSip, YETI Rambler, Stanley Quencher, Hydro Flask, and custom bottles.
+
+## Key Guides
+
+- When to wash a reusable water bottle: https://sipfit.app/blog/when-to-wash-your-water-bottle
+- Owala FreeSip cleaning: https://sipfit.app/blog/owala-freesip-cleaning-guide
+- YETI Rambler cleaning: https://sipfit.app/blog/yeti-rambler-cleaning-guide
+- Easy-clean bottle buying guide: https://sipfit.app/blog/best-water-bottle-easy-cleaning-guide
+- Water bottle smell prevention: https://sipfit.app/blog/water-bottle-smell-prevention
+
+## Short Cleaning Guidance
+
+- Water: wash daily if used daily.
+- Electrolytes: wash same day.
+- Protein or milk-based drinks: rinse as soon as possible and wash same day.
+- Coffee or tea: wash same day.
+- Sugary drinks: wash same day.
+- Lids, straws, gaskets, and mouthpieces need more attention than the bottle body.
+
+## Sources Used In SipFit Guides
+
+- Cleveland Clinic reusable bottle hygiene guidance.
+- AP reporting on reusable bottle cleaning.
+- FDA, CDC, and USDA food-safety guidance for perishable residue timing.
+- Owala, YETI, Hydro Flask, Stanley, and Consumer Reports cleaning guidance.

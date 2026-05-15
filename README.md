@@ -6,6 +6,9 @@ SipFit is a bottle-first hydration and bottle hygiene tracker prototype for dail
 
 - Landing page at `/`.
 - Working app prototype at `/app/`.
+- SEO blog index at `/blog/`.
+- Bottle-specific and drink-specific cleaning pages for long-tail search.
+- `sitemap.xml`, `robots.txt`, and `llms.txt` for discovery.
 - Track hydration by bottle: 1 bottle, 1/2 bottle, or 1/4 bottle.
 - Convert between oz and ml.
 - Manage Owala, YETI, and custom bottles locally.
