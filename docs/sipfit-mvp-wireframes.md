@@ -6,6 +6,25 @@ SipFit is a bottle-first hydration and hygiene tracker for heavy Owala and YETI 
 
 Track hydration by bottle, not by abstract cups. Cleaning reminders should react to the exact bottle, last wash time, recent drink type, and local weather.
 
+## Sip Pup
+
+Sip Pup is a lightweight mascot layer, not a game system.
+
+States:
+
+- Idle: waiting for the first bottle or first sip.
+- Happy: a sip was logged or the daily goal is progressing.
+- Alert: a bottle needs cleaning soon.
+- Wash: a bottle needs rinse/wash action now.
+
+Rules:
+
+- Sip Pup never blocks primary actions.
+- Sip Pup messages stay one sentence.
+- Today focuses on hydration encouragement.
+- Clean focuses on bottle hygiene reminders.
+- No points, feeding, skins, or pet chores in the MVP.
+
 ## Health Basis For MVP Rules
 
 - Reusable bottles should be washed regularly because moist bottle and lid parts can harbor bacteria, yeast, and mold.
@@ -35,6 +54,7 @@ Low-fidelity layout:
 │ 1,893 ml / 2,800 ml          │
 │ [oz] [ml]                    │
 │ [progress bar]               │
+│ Sip Pup: Nice sip.           │
 │ Today by time                │
 │ 16 oz   8 oz   24 oz         │
 │ [group if many logs]         │
@@ -147,6 +167,7 @@ Low-fidelity layout:
 │ Electrolytes + warm weather  │
 │ means this bottle should be  │
 │ cleaned today.               │
+│ Sip Pup: Wash by 9:30 PM.    │
 ├──────────────────────────────┤
 │ Checklist                    │
 │ Animated bottle part guide   │

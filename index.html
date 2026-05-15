@@ -41,6 +41,21 @@
             <div class="progress-track" aria-label="Daily hydration progress">
               <div class="progress-fill" id="hydration-progress"></div>
             </div>
+            <div class="sip-pup-card" id="today-pup" data-pup-state="idle" aria-live="polite">
+              <div class="sip-pup" aria-hidden="true">
+                <div class="pup-tail"></div>
+                <div class="pup-ear pup-ear-left"></div>
+                <div class="pup-ear pup-ear-right"></div>
+                <div class="pup-head">
+                  <div class="pup-eye pup-eye-left"></div>
+                  <div class="pup-eye pup-eye-right"></div>
+                  <div class="pup-nose"></div>
+                </div>
+                <div class="pup-body"></div>
+                <div class="pup-brush"></div>
+              </div>
+              <p id="today-pup-message">Sip Pup is ready.</p>
+            </div>
             <div class="timeline-chart" aria-label="Hydration over time">
               <div class="chart-head">
                 <span>Today by time</span>
@@ -157,6 +172,21 @@
               <span class="status-pill clean" id="clean-status">Clean</span>
             </div>
             <p class="muted" id="clean-reason">Drink + deadline + weather, in one line.</p>
+            <div class="sip-pup-card compact-pup" id="clean-pup" data-pup-state="idle" aria-live="polite">
+              <div class="sip-pup" aria-hidden="true">
+                <div class="pup-tail"></div>
+                <div class="pup-ear pup-ear-left"></div>
+                <div class="pup-ear pup-ear-right"></div>
+                <div class="pup-head">
+                  <div class="pup-eye pup-eye-left"></div>
+                  <div class="pup-eye pup-eye-right"></div>
+                  <div class="pup-nose"></div>
+                </div>
+                <div class="pup-body"></div>
+                <div class="pup-brush"></div>
+              </div>
+              <p id="clean-pup-message">Sip Pup is checking the lid.</p>
+            </div>
           </section>
 
           <section class="panel">

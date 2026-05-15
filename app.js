@@ -43,6 +43,8 @@ const els = {
   hydrationChart: document.querySelector("#hydration-chart"),
   chartSummary: document.querySelector("#chart-summary"),
   unitButtons: document.querySelectorAll("[data-display-unit]"),
+  todayPup: document.querySelector("#today-pup"),
+  todayPupMessage: document.querySelector("#today-pup-message"),
   activeBottleName: document.querySelector("#active-bottle-name"),
   activeStatus: document.querySelector("#active-status"),
   activeBottleMeta: document.querySelector("#active-bottle-meta"),
@@ -66,6 +68,8 @@ const els = {
   cleanBottleName: document.querySelector("#clean-bottle-name"),
   cleanStatus: document.querySelector("#clean-status"),
   cleanReason: document.querySelector("#clean-reason"),
+  cleanPup: document.querySelector("#clean-pup"),
+  cleanPupMessage: document.querySelector("#clean-pup-message"),
   bottleVisual: document.querySelector("#bottle-visual"),
   activePartLabel: document.querySelector("#active-part-label"),
   cleanChecklist: document.querySelector("#clean-checklist"),
@@ -409,6 +413,7 @@ function renderToday() {
   els.hydrationProgress.style.width = `${progress}%`;
   els.undoButton.disabled = state.undoStack?.at(-1)?.type !== "sip";
   renderUnitButtons();
+  renderTodayPup(todayTotalMl, progress, activeBottle, risk);
   renderHydrationChart();
 
   if (!activeBottle) {
@@ -422,6 +427,30 @@ function renderToday() {
   els.activeBottleMeta.textContent = `${Math.round(activeBottle.capacityOz)} oz · ${Math.round(activeBottle.capacityMl).toLocaleString()} ml · Last washed ${formatDateTime(getLastCleanAt(activeBottle.id, ["wash", "deep_clean"]))}`;
   setStatusPill(els.activeStatus, risk.statusClass, risk.statusLabel);
   renderWeather();
+}
+
+function renderTodayPup(todayTotalMl, progress, activeBottle, risk) {
+  if (!activeBottle) {
+    setPup(els.todayPup, els.todayPupMessage, "alert", "Add a bottle and I’ll help track it.");
+    return;
+  }
+
+  if (risk?.statusClass === "now" || risk?.statusClass === "tonight") {
+    setPup(els.todayPup, els.todayPupMessage, "wash", "This bottle needs clean care soon.");
+    return;
+  }
+
+  if (progress >= 100) {
+    setPup(els.todayPup, els.todayPupMessage, "happy", "Goal hit. Sip Pup approves.");
+    return;
+  }
+
+  if (todayTotalMl > 0) {
+    setPup(els.todayPup, els.todayPupMessage, "happy", "Nice sip. Keep the trail going.");
+    return;
+  }
+
+  setPup(els.todayPup, els.todayPupMessage, "idle", "Log your first bottle when ready.");
 }
 
 function renderHydrationChart() {
@@ -596,6 +625,7 @@ function renderClean() {
     els.cleanBottleName.textContent = "No bottle selected";
     els.cleanReason.textContent = "Add a bottle to get a cleaning checklist.";
     setStatusPill(els.cleanStatus, "clean", "Clean");
+    setPup(els.cleanPup, els.cleanPupMessage, "alert", "Add a bottle and I’ll watch the lid.");
     els.cleanChecklist.innerHTML = "";
     els.bottleVisual.innerHTML = "";
     els.activePartLabel.textContent = "No bottle";
@@ -607,6 +637,7 @@ function renderClean() {
   els.cleanBottleName.textContent = `${bottle.brand} ${bottle.model} ${Math.round(bottle.capacityOz)} oz`;
   els.cleanReason.textContent = risk.reason;
   setStatusPill(els.cleanStatus, risk.statusClass, risk.statusLabel);
+  renderCleanPup(risk);
 
   const parts = getChecklistParts(bottle);
   renderBottleVisual(parts);
@@ -623,6 +654,18 @@ function renderClean() {
   });
   activateVisualPart(parts[0]);
   renderCleanHistory(bottle);
+}
+
+function renderCleanPup(risk) {
+  if (risk.statusClass === "now") {
+    setPup(els.cleanPup, els.cleanPupMessage, "wash", `${risk.action || "Wash"} now. Don’t let residue sit.`);
+    return;
+  }
+  if (risk.statusClass === "tonight" || risk.statusClass === "soon") {
+    setPup(els.cleanPup, els.cleanPupMessage, "alert", `${risk.action || "Wash"} by ${formatDeadline(risk.deadline)}.`);
+    return;
+  }
+  setPup(els.cleanPup, els.cleanPupMessage, "idle", "Bottle looks good. Let parts dry open.");
 }
 
 function renderWeather() {
@@ -1119,6 +1162,11 @@ function showToast(message) {
   toastTimer = window.setTimeout(() => {
     els.toast.classList.remove("show");
   }, 2200);
+}
+
+function setPup(card, messageElement, stateName, message) {
+  card.dataset.pupState = stateName;
+  messageElement.textContent = message;
 }
 
 function escapeHtml(value) {
