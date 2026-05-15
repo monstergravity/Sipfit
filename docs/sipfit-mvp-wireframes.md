@@ -41,6 +41,34 @@ Primary tabs:
 - Bottles
 - Clean
 
+## Landing Page
+
+Root route:
+
+- `/` is an English landing page.
+- `/app/` is the working SipFit prototype.
+
+Landing headline:
+
+```text
+Your water bottle has a memory. SipFit helps you track it.
+```
+
+Landing direction:
+
+- Clean, bright, friendly visual tone.
+- State colors: clean green, warning amber, wash coral.
+- Bottle cards for Owala FreeSip, YETI Rambler, Stanley Quencher, Hydro Flask, and custom bottles.
+- Before/After uses light illustration and pain cards, not Reddit images.
+- Sip Pup adds motion and warmth without blocking the CTA.
+- CTA: "Join SipFit for free"
+
+Landing disclaimer:
+
+```text
+SipFit is not affiliated with Owala, YETI, Stanley, or Hydro Flask.
+```
+
 ## Today
 
 Low-fidelity layout:

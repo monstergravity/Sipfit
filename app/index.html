@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f766e" />
+    <title>SipFit</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">SipFit</p>
+          <h1 id="page-title">Today</h1>
+        </div>
+        <button class="icon-button" id="notify-button" type="button" aria-label="Enable wash reminders">
+          <span aria-hidden="true">!</span>
+        </button>
+      </header>
+
+      <main>
+        <section class="view active" id="today-view" aria-labelledby="today-tab">
+          <section class="hero-panel">
+            <div class="hero-copy">
+              <div class="section-row compact-row">
+                <p class="section-label">Today's hydration</p>
+                <div class="unit-toggle" aria-label="Display unit">
+                  <button class="unit-option active" type="button" data-display-unit="oz">oz</button>
+                  <button class="unit-option" type="button" data-display-unit="ml">ml</button>
+                </div>
+              </div>
+              <div class="total-row">
+                <span id="today-total-oz">0 oz</span>
+                <span id="today-goal-oz">/ 95 oz</span>
+              </div>
+              <p id="today-total-ml" class="muted">0 ml / 2,800 ml</p>
+            </div>
+            <div class="progress-track" aria-label="Daily hydration progress">
+              <div class="progress-fill" id="hydration-progress"></div>
+            </div>
+            <div class="sip-pup-card" id="today-pup" data-pup-state="idle" aria-live="polite">
+              <div class="sip-pup" aria-hidden="true">
+                <div class="pup-tail"></div>
+                <div class="pup-ear pup-ear-left"></div>
+                <div class="pup-ear pup-ear-right"></div>
+                <div class="pup-head">
+                  <div class="pup-eye pup-eye-left"></div>
+                  <div class="pup-eye pup-eye-right"></div>
+                  <div class="pup-nose"></div>
+                </div>
+                <div class="pup-body"></div>
+                <div class="pup-brush"></div>
+              </div>
+              <p id="today-pup-message">Sip Pup is ready.</p>
+            </div>
+            <div class="timeline-chart" aria-label="Hydration over time">
+              <div class="chart-head">
+                <span>Today by time</span>
+                <span id="chart-summary">No sips yet</span>
+              </div>
+              <svg id="hydration-chart" viewBox="0 0 320 120" role="img" aria-label="Line chart of hydration by time"></svg>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-label">Active bottle</p>
+                <h2 id="active-bottle-name">No bottle yet</h2>
+              </div>
+              <span class="status-pill clean" id="active-status">Clean</span>
+            </div>
+            <p id="active-bottle-meta" class="muted">Add a bottle to start tracking by bottle.</p>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-label">Log drink</p>
+                <h2>Track by bottle</h2>
+              </div>
+            </div>
+            <div class="drink-type-grid" id="drink-type-grid"></div>
+            <div class="bottle-actions">
+              <button class="primary-action" type="button" data-fraction="1">1 bottle</button>
+              <button class="secondary-action" type="button" data-fraction="0.5">1/2 bottle</button>
+              <button class="secondary-action" type="button" data-fraction="0.25">1/4 bottle</button>
+            </div>
+            <button class="text-button undo-button" id="undo-button" type="button" disabled>Undo last log</button>
+            <p class="helper-text" id="log-helper">Choose what was in the bottle, then tap an amount.</p>
+          </section>
+
+          <section class="panel weather-panel">
+            <div class="weather-copy-block">
+              <div class="section-row compact-row">
+                <p class="section-label">Weather</p>
+                <button class="text-button" id="weather-button" type="button">Use location</button>
+              </div>
+              <h2 id="weather-title">Weather not loaded</h2>
+              <p class="muted" id="weather-copy">Use location or enter a city to tune wash timing.</p>
+              <form class="city-form" id="city-form">
+                <input id="city-input" type="text" placeholder="Enter city if location fails" autocomplete="address-level2" />
+                <button class="secondary-action" type="submit">Set city</button>
+              </form>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="bottles-view" aria-labelledby="bottles-tab">
+          <section class="panel add-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-label">Bottle shelf</p>
+                <h2>Add a bottle</h2>
+              </div>
+            </div>
+            <form id="bottle-form" class="bottle-form">
+              <label>
+                Preset
+                <select id="preset-select"></select>
+              </label>
+              <div class="form-grid">
+                <label>
+                  Brand
+                  <input id="brand-input" type="text" autocomplete="off" />
+                </label>
+                <label>
+                  Model
+                  <input id="model-input" type="text" autocomplete="off" />
+                </label>
+              </div>
+              <div class="form-grid">
+                <label>
+                  Capacity
+                  <input id="capacity-input" type="number" min="1" step="1" />
+                </label>
+                <label>
+                  Unit
+                  <select id="unit-select">
+                    <option value="oz">oz</option>
+                    <option value="ml">ml</option>
+                  </select>
+                </label>
+              </div>
+              <label>
+                Color label
+                <input id="color-input" type="text" placeholder="Coastal blue" autocomplete="off" />
+              </label>
+              <button class="primary-action full-width" type="submit">Add bottle</button>
+            </form>
+          </section>
+
+          <section class="list-section">
+            <div class="section-row">
+              <p class="section-label">My bottles</p>
+              <button class="text-button" id="seed-button" type="button">Load examples</button>
+            </div>
+            <div id="bottle-list" class="bottle-list"></div>
+          </section>
+        </section>
+
+        <section class="view" id="clean-view" aria-labelledby="clean-tab">
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-label">Bottle hygiene</p>
+                <h2 id="clean-bottle-name">No bottle selected</h2>
+              </div>
+              <span class="status-pill clean" id="clean-status">Clean</span>
+            </div>
+            <p class="muted" id="clean-reason">Drink + deadline + weather, in one line.</p>
+            <div class="sip-pup-card compact-pup" id="clean-pup" data-pup-state="idle" aria-live="polite">
+              <div class="sip-pup" aria-hidden="true">
+                <div class="pup-tail"></div>
+                <div class="pup-ear pup-ear-left"></div>
+                <div class="pup-ear pup-ear-right"></div>
+                <div class="pup-head">
+                  <div class="pup-eye pup-eye-left"></div>
+                  <div class="pup-eye pup-eye-right"></div>
+                  <div class="pup-nose"></div>
+                </div>
+                <div class="pup-body"></div>
+                <div class="pup-brush"></div>
+              </div>
+              <p id="clean-pup-message">Sip Pup is checking the lid.</p>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-label">Checklist</p>
+                <h2>Quick clean path</h2>
+              </div>
+            </div>
+            <div class="bottle-visual" id="bottle-visual" aria-label="Bottle part guide">
+              <div class="active-part-label" id="active-part-label">Bottle body</div>
+              <div class="visual-part visual-cap" data-part="Lid"></div>
+              <div class="visual-part visual-button" data-part="Button area"></div>
+              <div class="visual-part visual-spout" data-part="Spout gasket"></div>
+              <div class="visual-part visual-body" data-part="Bottle body"></div>
+              <div class="visual-part visual-straw" data-part="Straw"></div>
+            </div>
+            <div id="clean-checklist" class="checklist"></div>
+          </section>
+
+          <section class="panel">
+            <p class="section-label">Record clean</p>
+            <p class="clean-level-desc" id="clean-level-desc">Washed: soap clean for daily bottle care.</p>
+            <div class="clean-actions">
+              <button class="secondary-action" data-clean-type="rinse" type="button">Rinsed</button>
+              <button class="primary-action" data-clean-type="wash" type="button">Washed</button>
+              <button class="secondary-action" data-clean-type="deep_clean" type="button">Deep cleaned</button>
+            </div>
+            <button class="primary-action full-width save-clean-button" id="save-clean-button" type="button">Save clean record</button>
+            <button class="text-button undo-button" id="undo-clean-button" type="button" disabled>Undo last clean</button>
+            <p class="helper-text" id="clean-helper">Choose a level, check the parts cleaned, then save.</p>
+          </section>
+
+          <section class="panel clean-history-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-label">Clean history</p>
+                <h2>Recent care</h2>
+              </div>
+            </div>
+            <div id="clean-history" class="clean-history"></div>
+          </section>
+        </section>
+      </main>
+
+      <nav class="tabbar" aria-label="Primary">
+        <button class="tab active" id="today-tab" type="button" data-view="today-view">Today</button>
+        <button class="tab" id="bottles-tab" type="button" data-view="bottles-view">Bottles</button>
+        <button class="tab" id="clean-tab" type="button" data-view="clean-view">Clean</button>
+      </nav>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <script src="../app.js" type="module"></script>
+  </body>
+</html>
